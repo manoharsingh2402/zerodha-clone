@@ -31,40 +31,44 @@ app.get("/allPositions", async (req, res) => {
 
 
 app.post("/newOrder", async (req, res) => {
-  let newOrder = new OrdersModel({
-    name: req.body.name,
-    qty: req.body.qty,
-    price: req.body.price,
-    mode: req.body.mode,
-  });
-
-  await newOrder.save();    
-
-  let stockInWatchList = await WatchListModel.findOne({ name: req.body.name }); 
-
-  if(stockInWatchList){      
-    const ltp= Number(stockInWatchList.price); 
-    const dayChg = String(stockInWatchList.percent); 
-    const curVal= ltp * Number(req.body.qty); 
-    const average = Number(req.body.price); 
-    const PL= curVal - average * Number(req.body.qty); 
-    let netChng = PL/(average * Number(req.body.qty));   
-    netChng = (netChng*100).toFixed(2) + "%"; 
-
-    let newHolding = new HoldingsModel({
-        name: req.body.name,
-        qty: req.body.qty,
-        avg: average.toFixed(2),
-        price: ltp,
-        net: netChng,
-        day: dayChg, 
-        isLoss: stockInWatchList.isDown,
-      
+  try {
+    let newOrder = new OrdersModel({
+      name: req.body.name,
+      qty: req.body.qty,
+      price: req.body.price,
+      mode: req.body.mode,
     });
-    await newHolding.save();
-  }
 
-  res.send("Order saved!");
+    await newOrder.save();
+
+    let stockInWatchList = await WatchListModel.findOne({ name: req.body.name }); 
+    if(stockInWatchList){      
+      const ltp= Number(stockInWatchList.price); 
+      const dayChg = String(stockInWatchList.percent); 
+      const curVal= ltp * Number(req.body.qty); 
+      const average = Number(req.body.price); 
+      const PL= curVal - average * Number(req.body.qty); 
+      let netChng = PL/(average * Number(req.body.qty));   
+      netChng = (netChng*100).toFixed(2) + "%"; 
+
+      let newHolding = new HoldingsModel({
+          name: req.body.name,
+          qty: req.body.qty,
+          avg: average.toFixed(2),
+          price: ltp,
+          net: netChng,
+          day: dayChg, 
+          isLoss: stockInWatchList.isDown,
+        
+      });
+      await newHolding.save(); 
+    }
+    res.send("Order saved!"); 
+  } 
+  catch (err) {
+    console.error(err);
+    res.status(500).send("Error saving order");
+  }
 });
 
 app.listen(PORT, () => {

@@ -11,15 +11,21 @@ const BuyActionWindow = ({ uid }) => {
   const [stockQuantity, setStockQuantity] = useState(1);
   const [stockPrice, setStockPrice] = useState(0.0);
 
-  const handleBuyClick = () => {
-    axios.post("https://zerodha-clone-4mha.onrender.com/newOrder", {
-      name: uid,
-      qty: stockQuantity,
-      price: stockPrice,
-      mode: "BUY",
-    });
-
-    GeneralContext.closeBuyWindow();
+  const handleBuyClick = async () => {
+    try {
+      // 1. Wait for the post request to finish completely
+      await axios.post("https://zerodha-clone-4mha.onrender.com/newOrder", {
+        name: uid,
+        qty: Number(stockQuantity), // Ensure these are sent as numbers, not strings!
+        price: Number(stockPrice),
+        mode: "BUY",
+      });
+      // 2. ONLY close the window after the request succeeds
+      GeneralContext.closeBuyWindow();
+    } catch (error) {
+      console.error("Failed to place order:", error); 
+      GeneralContext.closeBuyWindow(); 
+    }
   };
 
   const handleCancelClick = () => {
