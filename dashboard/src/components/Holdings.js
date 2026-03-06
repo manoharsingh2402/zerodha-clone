@@ -10,14 +10,13 @@ const Holdings = () => {
   useEffect(()=>{
     const fetchHoldings = async ()=>{
       try {
-        const response = await axios.get("http://localhost:3002/allHoldings"); 
+        const response = await axios.get("https://zerodha-clone-4mha.onrender.com/allHoldings"); 
         console.log("Holdings fetched:", response.data);
         setAllHoldings(response.data); 
       } catch (error) {
         console.error("Error fetching holdings:", error); 
       }
     }; 
-
     fetchHoldings(); 
   },[]);  
 
